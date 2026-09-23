@@ -1,0 +1,7 @@
+faster-whisper==1.2.1
+pymupdf==1.26.5
+numpy==2.0.2
+pillow==11.3.0
+rapidocr==3.9.2
+onnxruntime==1.30.0
+jsonschema==4.25.1

@@ -1,0 +1,251 @@
+/* The lecture page and the indexes. Colors live in one place: each with its light and dark
+   value (light-dark), picked by the system theme or by the button (data-theme), always
+   light in print. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f5f4ef,#131312);--surface:light-dark(#ffffff,#1c1c1a);--surface-2:light-dark(#eeede7,#262623);
+--border:light-dark(#e4e2da,#2f2f2c);--border-strong:light-dark(#cfccc2,#45443f);
+--text:light-dark(#1c1c1a,#ecebe5);--text-2:light-dark(#57564f,#b4b3ab);--text-3:light-dark(#77766f,#8d8c85);
+--accent:light-dark(#2e5bd8,#8aabff);--accent-tint:light-dark(#e8eefd,#1c2747);--accent-border:light-dark(#c3d3fa,#2f4176);
+--slate:light-dark(#4a5568,#b7c2d3);--slate-tint:light-dark(#eef1f5,#1f242c);--slate-border:light-dark(#d3dae4,#394352);
+--red:light-dark(#b3261e,#ff9a90);--red-tint:light-dark(#fdeeec,#361714);--red-border:light-dark(#f4c1bb,#6a2a23);
+--amber:light-dark(#935800,#ffc56b);--amber-tint:light-dark(#fff4de,#30240f);--amber-border:light-dark(#f1d396,#65491a);
+--green:light-dark(#1d7a4c,#72d6a3);--green-tint:light-dark(#e5f4eb,#15301f);--highlight:light-dark(#ffe38a,#6d5b10);
+--shadow:0 1px 2px light-dark(rgba(20,20,15,.05),rgba(0,0,0,.5)),0 6px 20px light-dark(rgba(20,20,15,.05),rgba(0,0,0,0))}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}   /* always: even on the elements the style gives a display */
+html{scroll-padding-top:24px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 "Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+h1,h2,h3{margin:0;font-family:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;font-weight:650;line-height:1.25}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--accent)}
+code{font:13px "Cascadia Mono",Consolas,monospace;word-break:break-all}
+
+/* The layout: on the left the fixed side (course, progress, video, search, contents), on the right the notes. */
+.layout{display:grid;grid-template-columns:clamp(260px,25vw,300px) minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding:26px 20px 20px;border-right:1px solid var(--border)}
+.brand b{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:8px;font-size:15px;font-weight:600;line-height:1.35}
+.bar{height:6px;overflow:hidden;border-radius:3px;background:var(--surface-2)}
+.bar i{display:block;width:0;height:100%;border-radius:3px;background:var(--green);transition:width .5s ease}
+.progress-text{display:block;margin-top:6px;font-size:12.5px;color:var(--text-3)}
+.player video,.player audio{display:block;width:100%}
+.player video{aspect-ratio:16/9;border-radius:12px;background:#000}
+.frame{position:relative}
+.jump{position:absolute;top:50%;left:50%;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.66);color:#fff;font-size:15px;font-weight:650;opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.85);transition:opacity .2s,transform .2s}
+.jump.visible{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.controls{display:flex;gap:6px;margin-top:10px}
+.controls button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 0;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text);font-size:13.5px;font-weight:600;transition:background .2s,transform .1s}
+.controls button:hover{background:var(--surface-2)}
+.controls button:active{transform:scale(.96)}
+.controls svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s}
+.controls svg .filled{fill:currentColor;stroke:none}
+#play{flex:0 0 46px;color:var(--accent)}
+#collapse{flex:0 0 40px;display:none}
+.icon-pause,.playing .icon-play{display:none}
+.playing .icon-pause{display:block}
+.speed{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13.5px;color:var(--text-2)}
+.speed input{flex:1;min-width:0;margin:0;accent-color:var(--accent)}
+.speed button{min-width:54px;padding:3px 8px;border:1px solid var(--border-strong);border-radius:999px;background:var(--surface);color:var(--accent);font:600 12.5px/1.3 "Cascadia Mono",Consolas,monospace}
+.follow{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13.5px;color:var(--text-2);cursor:pointer}
+.follow input,.tick input{margin:0;accent-color:var(--green)}
+.media-missing{display:none;margin:0;font-size:13px;color:var(--text-3)}
+.no-media .player{display:none}
+.no-media .media-missing{display:block}
+.search input{width:100%;padding:9px 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;font-size:14.5px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.search span{display:block;min-height:1.2em;margin-top:6px;font-size:12.5px;color:var(--text-3)}
+.toc{display:flex;flex-direction:column;gap:2px}
+.toc a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;color:var(--text-2);font-size:14.5px;text-decoration:none;transition:background .2s,color .2s}
+.toc a::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--tone)}
+.toc a:hover{background:var(--surface-2);color:var(--text)}
+.toc a.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.toc .n{margin-left:auto;font-size:12px;color:var(--text-3)}
+.theme{align-self:flex-start;margin-top:auto;padding:6px 14px;border:1px solid var(--border-strong);border-radius:999px;background:none;font-size:13px;color:var(--text-2)}
+.main{width:100%;max-width:940px;padding:44px 52px 90px}
+
+/* The path "⌂ Courses / course", at the top of the lecture's side and of the indexes. */
+.breadcrumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:13px;font-weight:600;color:var(--text-3)}
+.breadcrumbs a,.breadcrumbs span{display:inline-flex;align-items:center;gap:5px}
+.breadcrumbs a{color:var(--accent);text-decoration:none}
+.breadcrumbs a:hover{text-decoration:underline}
+.breadcrumbs .sep{color:var(--border-strong)}
+.breadcrumbs svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* The indexes: the home with the courses and, for every course, its lectures. */
+.sheet{width:100%;max-width:860px;margin:0 auto;padding:40px 24px 80px}
+.sheet h1{margin-top:14px}
+.index-cards{display:grid;gap:12px;margin:26px 0 0;padding:0;list-style:none}
+.index-card{display:block;padding:18px 20px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow);color:var(--text);text-decoration:none;transition:border-color .2s,transform .2s}
+.index-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.index-card small{display:block;font-size:12.5px;color:var(--text-3)}
+.index-card b{display:block;margin:4px 0 6px;font-size:18px;font-weight:650;line-height:1.3}
+.stats{font-size:13.5px;color:var(--text-3)}
+.stats span{color:var(--tone);font-weight:600}
+.index-card .bar{margin-top:12px}
+.with-actions{position:relative}
+.with-actions .index-card{padding-right:96px}
+.entry-actions{position:absolute;top:12px;right:12px;display:flex;gap:2px}
+.entry-actions button{padding:5px 9px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--text);font-size:15px;opacity:.5;transition:opacity .2s,border-color .2s,background .2s}
+.with-actions:hover .entry-actions button,.entry-actions button:focus-visible{opacity:1}
+.entry-actions button:hover{border-color:var(--border-strong);background:var(--surface-2)}
+.entry-actions [data-delete]:hover{border-color:var(--red-border);background:var(--red-tint)}
+.sheet h2{margin:38px 0 12px;font-size:20px}
+.error-message{margin:10px 0 0;font-size:14px;font-weight:500;color:var(--red)}
+.error-message:empty{display:none}
+.button{padding:9px 16px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);font-size:14.5px;font-weight:600;transition:filter .2s,transform .1s}
+.button:hover{filter:brightness(.96)}
+.button:active{transform:scale(.97)}
+.button.primary{border-color:transparent;background:var(--accent);color:var(--bg)}
+
+
+/* On the home, if there is a new version on GitHub (manage.js). */
+.update{margin:0 0 16px;padding:10px 14px;border:1px solid var(--accent-border);border-radius:12px;background:var(--accent-tint);font-size:14.5px}
+
+/* "+ New course": a dashed box that turns into a field. */
+.add{padding:12px;border:2px dashed var(--border-strong);border-radius:16px}
+.add-open{width:100%;padding:12px;border:0;border-radius:10px;background:none;color:var(--accent);font-size:16px;font-weight:650}
+.add-open:hover{background:var(--accent-tint)}
+.add form{display:flex;flex-wrap:wrap;gap:8px}
+.add input{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text);font:inherit}
+
+/* A new lecture: the zone to drop the files onto, the picked ones, and "Process". */
+.dropzone{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:30px 20px;border:2px dashed var(--border-strong);border-radius:16px;background:var(--surface);text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.dropzone:hover,.dropzone.dragging{border-color:var(--accent);background:var(--accent-tint)}
+.dropzone:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.dropzone input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.dropzone b{font-size:16px}
+.dropzone span{font-size:13.5px;color:var(--text-3)}
+.busy .dropzone{opacity:.55;pointer-events:none}
+.chosen{display:grid;gap:6px;margin:12px 0 0;padding:0;list-style:none}
+.chosen li{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:14px}
+.file-kind{padding:4px 7px;border-radius:6px;background:var(--accent-tint);color:var(--accent);font:600 11px/1 "Cascadia Mono",Consolas,monospace;text-transform:uppercase}
+.file-kind.slides{background:var(--red-tint);color:var(--red)}
+.file-kind.audio{background:var(--green-tint);color:var(--green)}
+.chosen .size{margin-left:auto;font-size:13px;color:var(--text-3)}
+.chosen button{padding:0 4px;border:0;background:none;color:var(--text-3);font-size:18px;line-height:1}
+.submit-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:14px}
+.upload-status{font-size:13.5px;color:var(--text-2)}
+.language{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-2)}
+.language select{padding:8px 10px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text);font:inherit}
+
+/* The jobs: one card per lecture, the bar weighted by real time, the steps one by one. */
+.job-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.job{padding:16px 18px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)}
+.job .job-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.job .job-head b{font-size:16px}
+.job .state{font-size:13.5px;color:var(--text-3)}
+.job .job-head a,.job .job-head .actions{margin-left:auto}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.button.delete,.button.stop{border-color:var(--red-border);color:var(--red)}
+.job .bar{margin-top:12px}
+.job .bar i{background:var(--accent)}
+.state-done .state{color:var(--green);font-weight:600}
+.state-error .state{color:var(--red);font-weight:600}
+.awaiting-report .bar i{animation:pulse 1.6s ease-in-out infinite}
+.steps{display:grid;gap:5px;margin:12px 0 0;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:14px;color:var(--text-3)}
+.steps .mark{width:12px;height:12px;border:2px solid var(--border-strong);border-radius:50%;justify-self:center}
+.steps .note{font:500 12.5px/1.3 "Cascadia Mono",Consolas,monospace;text-align:right}
+.step-done{color:var(--text-2)!important}
+.step-done .mark{border-color:var(--green);background:var(--green)}
+.step-running{color:var(--text)!important;font-weight:600}
+.step-running .mark{border-color:var(--accent);border-top-color:transparent;animation:spin .9s linear infinite}
+.step-error{color:var(--red)!important}
+.step-error .mark{border-color:var(--red);background:var(--red)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{opacity:.4}}
+
+/* At the top: course and duration, the title, the four tiles that lead to the sections. */
+.meta{margin:0 0 10px;font-size:13.5px;color:var(--text-3)}
+h1{font-size:32px;letter-spacing:-.01em}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
+.tile{display:block;padding:14px 16px;border:1px solid var(--tone-border);border-radius:14px;background:var(--tone-tint);color:var(--tone);text-decoration:none;transition:transform .2s ease}
+.tile:hover{transform:translateY(-2px)}
+.tile b{display:block;font-size:30px;font-weight:650;line-height:1.1}
+.tile span{font-size:13px}
+
+/* The sections and their color: blue the lecture, slate off the slides, red the exam, yellow the notices. */
+.section{margin-top:64px}
+.section>h2{display:flex;align-items:center;gap:12px;margin:0 0 18px;font-size:25px}
+.num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--tone-tint);color:var(--tone);font-size:16px}
+.tone-lecture{--tone:var(--accent);--tone-tint:var(--accent-tint);--tone-border:var(--accent-border)}
+.tone-off-slide{--tone:var(--slate);--tone-tint:var(--slate-tint);--tone-border:var(--slate-border)}
+.tone-exam{--tone:var(--red);--tone-tint:var(--red-tint);--tone-border:var(--red-border)}
+.tone-notices{--tone:var(--amber);--tone-tint:var(--amber-tint);--tone-border:var(--amber-border)}
+.tone-notes{--tone:var(--text-3);--tone-tint:var(--surface-2);--tone-border:var(--border)}
+.summary{padding:18px 22px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)}
+.summary h3{margin-bottom:6px;font-size:17px}
+.summary ol{margin:0;padding:0;list-style:none;counter-reset:point}
+.summary li{display:grid;grid-template-columns:22px auto minmax(0,1fr);gap:12px;align-items:baseline;padding:9px 0;border-top:1px solid var(--border)}
+.summary li:first-child{border-top:0}
+.summary li::before{counter-increment:point;content:counter(point);font-size:13px;font-weight:650;color:var(--text-3);text-align:right}
+.goto{padding:0;border:0;background:none;line-height:1.55;text-align:left;transition:color .2s}
+.goto:hover{color:var(--accent)}
+.deck{display:flex;align-items:center;gap:12px;margin:34px 0 14px;font-size:12.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)}
+.deck::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* The cards: slide or screen on the left, the rest on the right. */
+.card{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;margin:0 0 14px;padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow);transition:border-color .3s,box-shadow .3s}
+.card.no-image{grid-template-columns:minmax(0,1fr)}
+.card.now{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.card-body{min-width:0}
+.thumb{display:block;align-self:start;overflow:hidden;padding:0;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:zoom-in}
+.thumb img{display:block;width:100%;height:auto;transition:transform .35s ease}
+.thumb:hover img{transform:scale(1.04)}
+.title-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.title-row h3{flex:1;min-width:0;font-size:18px}
+.page-no{padding:5px 7px;border-radius:6px;background:var(--accent-tint);color:var(--accent);font:600 12px/1 "Cascadia Mono",Consolas,monospace}
+.tick{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid var(--border);border-radius:999px;font-size:13px;color:var(--text-3);cursor:pointer;user-select:none;transition:background .25s,color .25s,border-color .25s}
+.studied .tick{border-color:transparent;background:var(--green-tint);color:var(--green)}
+.studied .title-row h3{color:var(--text-2)}
+.times{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.t{display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 10px;border:0;border-radius:999px;background:var(--accent-tint);color:var(--accent);font:500 12.5px/1 "Cascadia Mono",Consolas,monospace;white-space:nowrap;transition:transform .15s ease,filter .2s}
+.t::before{content:"";border-left:7px solid currentColor;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
+.t:hover{transform:translateY(-1px);filter:brightness(.95)}
+.t.inline{gap:5px;padding:2px 8px 2px 7px;font-size:12px;vertical-align:1px}
+.key-points{margin:12px 0 0;padding-left:20px}
+.key-points li{margin:4px 0}
+.explanation{overflow:hidden;margin-top:12px;color:var(--text-2)}
+.explanation p{margin:0 0 .75em}
+.explanation.clamped{max-height:5.2em;-webkit-mask-image:linear-gradient(#000 45%,transparent);mask-image:linear-gradient(#000 45%,transparent)}
+.explanation.found{max-height:none!important;-webkit-mask-image:none;mask-image:none}
+.expand{padding:4px 0;border:0;background:none;color:var(--accent);font-size:14px;font-weight:600}
+.expand::after{content:" \25BE"}
+.expand[aria-expanded=true]::after{content:" \25B4"}
+
+/* Exam and notices: one colored row per item, with the timestamp and the lecturer's exact words. */
+.callouts{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.callout{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start;padding:14px 16px;border:1px solid var(--tone-border);border-radius:14px;background:var(--tone-tint)}
+.callout .t{background:var(--surface);color:var(--tone)}
+.kind{display:block;margin-bottom:3px;font-size:11.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--tone)}
+.callout-text{margin:0;font-weight:500}
+blockquote{margin:8px 0 0;padding-left:12px;border-left:2px solid var(--tone-border);color:var(--text-2);font:italic 15px/1.6 Georgia,Cambria,"Times New Roman",serif}
+.unverified{display:inline-block;margin-left:8px;padding:1px 9px;border:1px solid var(--red-border);border-radius:999px;background:var(--surface);color:var(--red);font-size:12px;font-weight:600;vertical-align:1px}
+.caveat{margin:0 0 16px;padding:11px 15px;border-radius:12px;background:var(--surface-2);color:var(--text-2);font-size:14px}
+.notes{margin:0;padding-left:20px;color:var(--text-2);font-size:14.5px}
+.notes li{margin:6px 0}
+.none{margin:0;color:var(--text-3)}
+.footer{margin-top:70px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+
+/* Search, lightbox, animations. */
+.no-match,.empty,.searching .deck{display:none!important}
+::highlight(found){background:var(--highlight);color:inherit}
+.lightbox{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:4vmin;background:rgba(12,12,12,.84);cursor:zoom-out;animation:fade-in .2s ease}
+.lightbox img{max-width:100%;max-height:100%;border-radius:10px;background:#fff;box-shadow:0 12px 48px rgba(0,0,0,.5)}
+.flash{animation:flash 1.5s ease}
+@keyframes flash{0%,35%{border-color:var(--accent);box-shadow:0 0 0 6px var(--accent-tint)}}
+@keyframes fade-in{from{opacity:0}}
+@media (prefers-reduced-motion:no-preference){.js .reveal{opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease}.js .reveal.revealed{opacity:1;transform:none}}
+
+/* Medium windows (half a screen): the two columns stay, a bit narrower. */
+@media (max-width:1100px){.main{padding:36px 28px 80px}.card{grid-template-columns:170px minmax(0,1fr)}}
+/* Narrow windows: the side goes on top and the video stays docked in a corner, always within
+   reach; "collapse" leaves only the row of controls. */
+@media (max-width:860px){.layout{display:block}.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}.theme{margin-top:0}.main{padding:30px 18px 320px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.player{position:fixed;right:12px;bottom:12px;z-index:40;width:min(calc(100vw - 24px),380px);padding:10px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:0 10px 32px rgba(0,0,0,.28)}#collapse{display:inline-flex}.collapsed .frame,.collapsed .speed,.collapsed .follow{display:none}.collapsed .controls{margin-top:0}.collapsed #collapse svg{transform:rotate(180deg)}}
+@media (max-width:640px){h1{font-size:25px}.card,.callout{grid-template-columns:minmax(0,1fr)}.thumb{max-width:340px}}
+
+/* Print: always light, everything expanded, no controls. */
+@media print{:root,:root[data-theme]{color-scheme:light}.side,.expand,.tick,.lightbox{display:none!important}.layout{display:block}.main{max-width:none;padding:0}.explanation{max-height:none!important;-webkit-mask-image:none!important;mask-image:none!important}.card,.callout,.summary{break-inside:avoid;box-shadow:none}.js .reveal{opacity:1!important;transform:none!important}}

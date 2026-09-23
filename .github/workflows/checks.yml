@@ -1,0 +1,22 @@
+# On pushes to main, on pull requests, before every release (release.yml calls it) and by
+# hand (Actions → checks → Run workflow): the Python compiles and has no unused or undefined
+# names (pyflakes), the JavaScript parses.
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: pipx run pyflakes recap          # pipx: the runner's system Python refuses pip installs
+      - run: for f in recap/page/*.js; do node --check "$f"; done

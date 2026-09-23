@@ -1,0 +1,113 @@
+# PoliTo Recap. Put this file in a folder, then
+#   docker compose run --rm setup      it asks who writes the notes and writes .env
+#   docker compose up -d
+# and open http://localhost:8470. Every choice lives in .env: this file stays as it is.
+name: polito-recap
+
+services:
+  recap:
+    image: ghcr.io/capufa/polito-recap:${RECAP_VERSION:-latest}
+    container_name: polito-recap
+    restart: unless-stopped
+    init: true                  # signals reach the app, and ffmpeg and the vendors' programs never linger as zombies
+    env_file:
+      - path: .env
+        required: false         # without it the app starts anyway, with a page that says to run the setup
+    user: ${RECAP_USER:-1000:1000}
+    # By default the app opens only on this computer: it has no login, and whoever reaches it
+    # can do anything. For your home network: RECAP_BIND=0.0.0.0 (README, "From other devices").
+    ports:
+      - "${RECAP_BIND:-127.0.0.1}:${RECAP_PORT:-8470}:8470"
+    # Ollama or LM Studio on this computer, seen from the container (Linux needs this line).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${RECAP_DATA:-./data}/courses:/courses
+      - ${RECAP_DATA:-./data}/models:/models
+      - accounts:/accounts
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m
+    # Transcription works in slices: 2.7 GB peak for 82 minutes of lecture, 3.5 GB for 221.
+    cpus: ${RECAP_CPUS:-4}
+    mem_limit: ${RECAP_MEMORY:-6g}
+    pids_limit: 256
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # The guided setup (recap/setup.py): docker compose run --rm setup. It runs as root to give
+  # .env, the data folders and the vendor's program to this folder's owner: it may change
+  # owners and write here and in the accounts volume, nothing else.
+  setup:
+    profiles:
+      - setup
+    image: ghcr.io/capufa/polito-recap:${RECAP_VERSION:-latest}
+    user: "0:0"
+    command: ["python", "-m", "recap.setup", "/config"]
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - .:/config
+      - accounts:/accounts
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
+
+  # Hourly backup copy of the finished lectures to a NAS or another disk: turn it on with
+  # COMPOSE_PROFILES=backup and RECAP_BACKUP, the mount point, which must exist. The copy goes
+  # to its polito-recap folder; if that is missing (the NAS is not mounted yet) the pass waits
+  # an hour and writes nothing. rslave: a mount made after the start shows up here too (Linux).
+  backup:
+    profiles:
+      - backup
+    image: ghcr.io/capufa/polito-recap:${RECAP_VERSION:-latest}
+    container_name: polito-recap-backup
+    restart: unless-stopped
+    init: true
+    user: ${RECAP_USER:-1000:1000}
+    command: ["python", "-m", "recap.backup", "--courses", "/courses", "--dest", "/backup/polito-recap"]
+    volumes:
+      - ${RECAP_DATA:-./data}/courses:/courses:ro
+      - type: bind
+        source: ${RECAP_BACKUP:-./backup}
+        target: /backup
+        bind:
+          create_host_path: false
+          propagation: rslave
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    mem_limit: 256m
+    pids_limit: 32
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# The vendors' programs for the subscriptions, each with its own sign-in (recap/report/program.py):
+# a volume of Docker's own, not a folder here, so the sign-ins never end up in copies of this folder.
+volumes:
+  accounts:

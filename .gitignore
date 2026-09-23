@@ -1,0 +1,7 @@
+__pycache__/
+# The data and the keys of whoever runs it: never in the repository.
+.env
+data/
+backup/
+# A Compose override always belongs to one machine (addresses, disks).
+docker-compose.override.yml

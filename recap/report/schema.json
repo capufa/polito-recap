@@ -1,0 +1,171 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "summary",
+    "slides",
+    "off_slide",
+    "exam",
+    "notices",
+    "notes"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "The topic of the lecture in a few words"
+    },
+    "summary": {
+      "type": "array",
+      "description": "What the lecturer explained: 5 to 15 points in time order",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "point",
+          "t"
+        ],
+        "properties": {
+          "point": {
+            "type": "string"
+          },
+          "t": {
+            "type": "string",
+            "description": "HH:MM:SS copied from a t field of the input"
+          }
+        }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "description": "One entry for each slide the lecturer talks about, in the order they talk about it",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deck",
+          "page",
+          "title",
+          "explanation",
+          "key_points"
+        ],
+        "properties": {
+          "deck": {
+            "type": "string"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the slide, or a short one if it has none"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "Everything the lecturer said about this slide, cleaned of fillers and repetitions: examples, analogies, common mistakes, students' questions and the answers"
+          },
+          "key_points": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "off_slide": {
+      "type": "array",
+      "description": "One entry for each off_slide element of the input where the lecturer said something that matters",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "shows",
+          "explanation"
+        ],
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "The same value as the from field in the input"
+          },
+          "shows": {
+            "type": "string",
+            "description": "What was on screen, in one line"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "What the lecturer said at that moment, in a clean and complete form"
+          }
+        }
+      }
+    },
+    "exam": {
+      "type": "array",
+      "description": "Everything about the exam: content the lecturer marks as required, dates, format, allowed materials",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "t",
+          "kind",
+          "text",
+          "quote"
+        ],
+        "properties": {
+          "t": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "content",
+              "date",
+              "format",
+              "materials"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "description": "The lecturer's exact words, copied from the transcript"
+          }
+        }
+      }
+    },
+    "notices": {
+      "type": "array",
+      "description": "Notices about lectures (cancelled, moved, room), labs, deadlines, office hours, materials, course organization",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "t",
+          "text",
+          "quote"
+        ],
+        "properties": {
+          "t": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "description": "The lecturer's exact words, copied from the transcript"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "Unintelligible or doubtful passages, each with its timestamp",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

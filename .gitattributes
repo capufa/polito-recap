@@ -1,0 +1,2 @@
+# LF everywhere, also in Windows checkouts: the files end up in a Linux image.
+* text=auto eol=lf
